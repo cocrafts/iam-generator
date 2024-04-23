@@ -1,0 +1,7 @@
+{
+    "sst_update_stack": {
+        "project": "walless",
+        "stages": ["production", "staging", "development"],
+        "stacks": ["document", "landing", "wallet"]
+    }
+}

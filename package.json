@@ -1,0 +1,17 @@
+{
+  "name": "iam-generator",
+  "module": "index.js",
+  "type": "module",
+  "devDependencies": {
+    "@metacraft/eslint-config": "^0.0.9",
+    "@types/bun": "latest",
+    "eslint": "^9.1.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "mustache": "^4.2.0",
+    "readline-sync": "^1.4.10"
+  }
+}

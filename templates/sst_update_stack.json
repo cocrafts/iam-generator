@@ -1,0 +1,79 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "ManageS3",
+			"Effect": "Allow",
+			"Action": [
+				"s3:ListBucket",
+				"s3:DescribeJob",
+				"s3:GetObject",
+				"s3:PutBucketVersioning",
+				"s3:PutObject",
+				"s3:PutObjectTagging",
+				"s3:PutObjectVersionTagging"
+			],
+			"Resource": [
+				"arn:aws:s3:::{{ stage }}-{{ project }}-{{ stack_short_name }}-*"
+			]
+		},
+		{
+			"Sid": "UpdateStack",
+			"Effect": "Allow",
+			"Action": [
+				"cloudformation:UpdateStack",
+				"cloudformation:DescribeStacks",
+				"cloudformation:DescribeStackEvents",
+				"cloudformation:DescribeStackResources",
+				"cloudformation:GetTemplate"
+			],
+			"Resource": [
+				"arn:aws:cloudformation:ap-south-1:585732647569:stack/{{ stage }}-{{ project }}-{{ stack_name }}/*"
+			]
+		},
+		{
+			"Sid": "GetCDKBootstrapVersion",
+			"Effect": "Allow",
+			"Action": [
+				"ssm:GetParameter"
+			],
+			"Resource": [
+				"arn:aws:ssm:ap-south-1:585732647569:parameter/cdk-bootstrap/hnb659fds/version"
+			]
+		},
+		{
+			"Sid": "QueryCDKAssets",
+			"Effect": "Allow",
+			"Action": [
+				"s3:GetObject",
+				"s3:PutObject"
+			],
+			"Resource": [
+				"arn:aws:s3:::cdk-hnb659fds-assets-585732647569-ap-south-1"
+			]
+		},
+		{
+			"Sid": "DescribeToolkitStack",
+			"Effect": "Allow",
+			"Action": [
+				"cloudformation:DescribeStacks"
+			],
+			"Resource": [
+				"arn:aws:cloudformation:ap-south-1:585732647569:stack/CDKToolkit/*",
+				"arn:aws:cloudformation:ap-south-1:585732647569:stack/SSTBootstrap/*"
+			]
+		},
+		{
+			"Sid": "AssumeCDKRoles",
+			"Effect": "Allow",
+			"Action": "sts:AssumeRole",
+			"Resource": [
+				"arn:aws:iam::585732647569:role/cdk-hnb659fds-cfn-exec-role-*",
+				"arn:aws:iam::585732647569:role/cdk-hnb659fds-file-publishing-role-*",
+				"arn:aws:iam::585732647569:role/cdk-hnb659fds-image-publishing-role-*",
+				"arn:aws:iam::585732647569:role/cdk-hnb659fds-lookup-role-*",
+				"arn:aws:iam::585732647569:role/cdk-hnb659fds-deploy-role-*"
+			]
+		}
+	]
+}
