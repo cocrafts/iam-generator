@@ -35,24 +35,28 @@ switch (templateName) {
     const configFile = getFlag("config", true)
     if (configFile) {
       const config = JSON.parse(fs.readFileSync(configFile, 'utf8'))
+      const account_id = config.account_id
+      const region = config.region
       const project = config.sst_update_stack.project
       const stages = config.sst_update_stack.stages
       const stacks = config.sst_update_stack.stacks
       for (const stage of stages) {
         for (const stack of stacks) {
           const output = Mustache.render(template, {
-            project, stage, stack_name: stack, stack_short_name: stack.substring(0, 6)
+            project, stage, stack_name: stack, stack_short_name: stack.substring(0, 6), account_id, region
           })
           fs.writeFileSync(`./output/sst_update_stack_${project}_${stage}_${stack}.json`, output)
         }
       }
     }
     else {
+      const account_id = readlineSync.question("AWS Account ID: ")
+      const region = readlineSync.question("Region: ")
       const project = readlineSync.question("Project: ")
       const stage = readlineSync.question("Stage: ")
       const stack = readlineSync.question("Stack: ")
       const output = Mustache.render(template, {
-        project, stage, stack_name: stack, stack_short_name: stack.substring(0, 6)
+        project, stage, stack_name: stack, stack_short_name: stack.substring(0, 6), account_id, region
       })
       fs.writeFileSync(`./output/sst_update_stack_${project}_${stage}_${stack}.json`, output)
     }
