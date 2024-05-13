@@ -1,0 +1,63 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "UpdateStack",
+			"Effect": "Allow",
+			"Action": [
+				"cloudformation:UpdateStack",
+				"cloudformation:DescribeStacks",
+				"cloudformation:DescribeStackEvents",
+				"cloudformation:DescribeStackResources",
+				"cloudformation:GetTemplate"
+			],
+			"Resource": [
+				"arn:aws:cloudformation:{{ region }}:{{ account_id }}:stack/{{ stage }}-{{ project }}-{{ stack_name }}/*"
+			]
+		},
+		{
+			"Sid": "GetCDKBootstrapVersion",
+			"Effect": "Allow",
+			"Action": [
+				"ssm:GetParameter"
+			],
+			"Resource": [
+				"arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/cdk-bootstrap/hnb659fds/version"
+			]
+		},
+		{
+			"Sid": "QueryCDKAssets",
+			"Effect": "Allow",
+			"Action": [
+				"s3:GetObject",
+				"s3:PutObject"
+			],
+			"Resource": [
+				"arn:aws:s3:::cdk-hnb659fds-assets-{{ account_id }}-{{ region }}"
+			]
+		},
+		{
+			"Sid": "DescribeToolkitStack",
+			"Effect": "Allow",
+			"Action": [
+				"cloudformation:DescribeStacks"
+			],
+			"Resource": [
+				"arn:aws:cloudformation:{{ region }}:{{ account_id }}:stack/CDKToolkit/*",
+				"arn:aws:cloudformation:{{ region }}:{{ account_id }}:stack/SSTBootstrap/*"
+			]
+		},
+		{
+			"Sid": "AssumeCDKRoles",
+			"Effect": "Allow",
+			"Action": "sts:AssumeRole",
+			"Resource": [
+				"arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-cfn-exec-role-*",
+				"arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-file-publishing-role-*",
+				"arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-image-publishing-role-*",
+				"arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-lookup-role-*",
+				"arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-deploy-role-*"
+			]
+		}
+	]
+}
