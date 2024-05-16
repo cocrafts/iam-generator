@@ -17,13 +17,11 @@
     "sst_self_managed_stack_no_s3": {
         "project": "gotenks",
         "stages": [
-            "development",
-            "staging",
-            "production"
+            "hieu-sandbox"
         ],
         "stacks": [
+            "WallessStack",
             "PixeverseStack",
-            "ReferralStack",
             "ApiStack"
         ]
     },
