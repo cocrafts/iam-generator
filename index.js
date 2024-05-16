@@ -19,7 +19,7 @@ const getFlag = (name, withValue = false) => {
 }
 
 const templates = [
-    "sst_update_stack", "sst_self_managed_stack_no_s3",
+    "sst_update_stack", "sst_self_managed_stack_no_s3", "sst_view_cloud_watch"
 ]
 
 const templateFromFlag = getFlag("template", true)
@@ -73,9 +73,9 @@ switch (templateName) {
       const config = JSON.parse(fs.readFileSync(configFile, 'utf8'))
       const account_id = config.account_id
       const region = config.region
-      const project = config.sst_update_stack.project
-      const stages = config.sst_update_stack.stages
-      const stacks = config.sst_update_stack.stacks
+      const project = config.sst_self_managed_stack_no_s3.project
+      const stages = config.sst_self_managed_stack_no_s3.stages
+      const stacks = config.sst_self_managed_stack_no_s3.stacks
       for (const stage of stages) {
         for (const stack of stacks) {
           const output = Mustache.render(template, {
@@ -95,6 +95,34 @@ switch (templateName) {
         project, stage, stack_name: stack, account_id, region
       })
       fs.writeFileSync(`./output/${templateName}_${project}_${stage}_${stack}.json`, output)
+    }
+    break
+  }
+  case "sst_view_cloud_watch": {
+    const template = fs.readFileSync(`templates/${templateName}.json`, 'utf8')
+    const configFile = getFlag("config", true)
+    if (configFile) {
+      const config = JSON.parse(fs.readFileSync(configFile, 'utf8'))
+      const account_id = config.account_id
+      const region = config.region
+      const project = config.sst_view_cloud_watch.project
+      const stages = config.sst_view_cloud_watch.stages
+      for (const stage of stages) {
+        const output = Mustache.render(template, {
+          project, stage, account_id, region
+        })
+        fs.writeFileSync(`./output/${templateName}_${project}_${stage}.json`, output)
+      }
+    }
+    else {
+      const account_id = readlineSync.question("AWS Account ID: ")
+      const region = readlineSync.question("Region: ")
+      const project = readlineSync.question("Project: ")
+      const stage = readlineSync.question("Stage: ")
+      const output = Mustache.render(template, {
+        project, stage, account_id, region
+      })
+      fs.writeFileSync(`./output/${templateName}_${project}_${stage}.json`, output)
     }
     break
   }

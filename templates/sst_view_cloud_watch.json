@@ -1,0 +1,34 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ViewLogGroups",
+            "Effect": "Allow",
+            "Action": [
+                "logs:DescribeLogGroups"
+            ],
+            "Resource": [
+                "arn:aws:logs:{{ region }}:{{ account_id }}:log-group::log-stream:"
+            ]
+        },
+        {
+            "Sid": "ViewCloudWatch",
+            "Effect": "Allow",
+            "Action": [
+                "logs:Describe*",
+                "logs:Get*",
+                "logs:List*",
+                "logs:StartQuery",
+                "logs:StopQuery",
+                "logs:TestMetricFilter",
+                "logs:FilterLogEvents",
+                "logs:StartLiveTail",
+                "logs:StopLiveTail",
+                "cloudwatch:GenerateQuery"
+            ],
+            "Resource": [
+                "arn:aws:logs:{{ region }}:{{ account_id }}:log-group:/aws/lambda/{{ stage }}-{{ project }}*"
+            ]
+        }
+    ]
+}
