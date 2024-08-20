@@ -3,7 +3,32 @@
     "region": "ap-south-1",
     "sst_update_stack": {
         "project": "walless",
-        "stages": ["production", "staging", "development"],
-        "stacks": ["document", "landing", "wallet"]
+        "stages": [
+            "production",
+            "staging",
+            "development"
+        ],
+        "stacks": [
+            "document",
+            "landing",
+            "wallet"
+        ]
+    },
+    "sst_self_managed_stack_no_s3": {
+        "project": "gotenks",
+        "stages": [
+            "hieu-sandbox"
+        ],
+        "stacks": [
+            "WallessStack",
+            "PixeverseStack",
+            "ApiStack"
+        ]
+    },
+    "sst_view_cloud_watch": {
+        "project": "gotenks",
+        "stages": [
+            "hieu-sandbox"
+        ]
     }
 }

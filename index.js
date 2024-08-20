@@ -1,102 +1,129 @@
 const Mustache = require('mustache');
 const readlineSync = require('readline-sync');
-const fs = require('fs')
+const fs = require('fs');
+const { getFlag } = require('./utils');
 
-if (!fs.existsSync("./output")) {
-  fs.mkdirSync("./output")
+if (!fs.existsSync('./output')) {
+	fs.mkdirSync('./output');
 }
 
-const getFlag = (name, withValue = false) => {
-  const flag = `--${name}` 
-  const flagIndex = process.argv.findIndex(arg => arg === flag)
-  if (flagIndex === -1) return false
-  if (withValue) {
-    if (flagIndex + 1 >= process.argv.length) throw Error("Missing value for flag: " + flag)
-    return process.argv[flagIndex + 1]
-  } else {
-    return true
-  }
+if (!fs.existsSync('./templates')) {
+	throw Error('Required templates dir');
 }
 
-const templates = [
-    "sst_update_stack", "sst_self_managed_stack_no_s3",
-]
+const files = fs.readdirSync('./templates');
+const templates = files.map((f) => f.replace('.json', ''));
 
-const templateFromFlag = getFlag("template", true)
+const templateFromFlag = getFlag('template', true);
 
-let templateName
+let templateName;
 if (templateFromFlag) {
-  if (!templates.includes(templateFromFlag)) throw Error(`Invalid template: ${templateFromFlag}, required: ${templates}`)
-  templateName = templateFromFlag
+	if (!templates.includes(templateFromFlag))
+		throw Error(
+			`Invalid template: ${templateFromFlag}, required: ${templates}`,
+		);
+	templateName = templateFromFlag;
 } else {
-  const templateIndex = readlineSync.keyInSelect(templates, "Choose a template: ")
-  templateName = templates[templateIndex]
+	const templateIndex = readlineSync.keyInSelect(
+		templates,
+		'Choose a template: ',
+	);
+	templateName = templates[templateIndex];
 }
 
-switch (templateName) {
-  case "sst_update_stack": {
-    const template = fs.readFileSync(`templates/sst_update_stack.json`, 'utf8')
-    const configFile = getFlag("config", true)
-    if (configFile) {
-      const config = JSON.parse(fs.readFileSync(configFile, 'utf8'))
-      const account_id = config.account_id
-      const region = config.region
-      const project = config.sst_update_stack.project
-      const stages = config.sst_update_stack.stages
-      const stacks = config.sst_update_stack.stacks
-      for (const stage of stages) {
-        for (const stack of stacks) {
-          const output = Mustache.render(template, {
-            project, stage, stack_name: stack, stack_short_name: stack.substring(0, 6), account_id, region
-          })
-          fs.writeFileSync(`./output/sst_update_stack_${project}_${stage}_${stack}.json`, output)
-        }
-      }
-    }
-    else {
-      const account_id = readlineSync.question("AWS Account ID: ")
-      const region = readlineSync.question("Region: ")
-      const project = readlineSync.question("Project: ")
-      const stage = readlineSync.question("Stage: ")
-      const stack = readlineSync.question("Stack: ")
-      const output = Mustache.render(template, {
-        project, stage, stack_name: stack, stack_short_name: stack.substring(0, 6), account_id, region
-      })
-      fs.writeFileSync(`./output/sst_update_stack_${project}_${stage}_${stack}.json`, output)
-    }
-    break
-  }
-  case "sst_self_managed_stack_no_s3": {
-    const template = fs.readFileSync(`templates/${templateName}.json`, 'utf8')
-    const configFile = getFlag("config", true)
-    if (configFile) {
-      const config = JSON.parse(fs.readFileSync(configFile, 'utf8'))
-      const account_id = config.account_id
-      const region = config.region
-      const project = config.sst_update_stack.project
-      const stages = config.sst_update_stack.stages
-      const stacks = config.sst_update_stack.stacks
-      for (const stage of stages) {
-        for (const stack of stacks) {
-          const output = Mustache.render(template, {
-            project, stage, stack_name: stack, account_id, region
-          })
-          fs.writeFileSync(`./output/${templateName}_${project}_${stage}_${stack}.json`, output)
-        }
-      }
-    }
-    else {
-      const account_id = readlineSync.question("AWS Account ID: ")
-      const region = readlineSync.question("Region: ")
-      const project = readlineSync.question("Project: ")
-      const stage = readlineSync.question("Stage: ")
-      const stack = readlineSync.question("Stack: ")
-      const output = Mustache.render(template, {
-        project, stage, stack_name: stack, account_id, region
-      })
-      fs.writeFileSync(`./output/${templateName}_${project}_${stage}_${stack}.json`, output)
-    }
-    break
-  }
+let config;
+let region = '';
+let project = '';
+let account_id = '';
+let stages = [];
+let stacks = [];
+
+const template = fs.readFileSync(`templates/${templateName}.json`, 'utf8');
+const configFile = getFlag('config', true);
+
+if (configFile) {
+	account_id = config.account_id;
+	region = config.region;
+	project = config[templateName].project;
+	stages = config[templateName].stages;
+	stacks = config[templateName].stacks;
+} else {
+	account_id = getFlag('account-id', true);
+	if (!account_id) account_id = readlineSync.question('AWS Account ID: ');
+
+	region = getFlag('region', true);
+	if (!region) region = readlineSync.question('Region: ');
+
+	project = getFlag('project', true);
+	if (!project) project = readlineSync.question('Project: ');
+
+	let stage = getFlag('stage', true);
+	if (!stage) stage = readlineSync.question('Stage (comma separate): ');
+	stages = stage.split(',');
+
+	let stack = getFlag('stack', true);
+	if (!stack) stack = readlineSync.question('Stack (comma separate): ');
+	stacks = stack.split(',');
 }
 
+let merge = getFlag('merge');
+let mergedIAM;
+
+for (const stage of stages) {
+	for (const stack of stacks) {
+		const output = Mustache.render(template, {
+			region,
+			account_id,
+			project,
+			stage,
+			stack_name: stack,
+			stack_short_name: stack.substring(0, 6),
+		});
+
+		if (merge) {
+			const parsedOutput = JSON.parse(output);
+			if (!mergedIAM) {
+				mergedIAM = parsedOutput;
+			} else {
+				mergedIAM.Statement.push(...parsedOutput.Statement);
+			}
+		} else {
+			const fileName = `./output/${templateName}_${project}_${stage}_${stack}.json`;
+			fs.writeFileSync(fileName, output);
+			console.log(`-> Created ${fileName}`);
+		}
+	}
+}
+
+if (merge) {
+	const fileName = `./output/${templateName}_${project}_${stages.join('-')}_${stacks.join('-')}.json`;
+
+	const mergedStatements = {};
+	for (const index in mergedIAM.Statement) {
+		const statement = mergedIAM.Statement[index];
+		if (!mergedStatements[statement.Sid]) {
+			if (typeof statement.Resource === 'string') {
+				statement.Resource = [statement.Resource];
+			}
+			mergedStatements[statement.Sid] = statement;
+		} else {
+			if (typeof statement.Resource === 'string') {
+				mergedStatements[statement.Sid].Resource.push(statement.Resource);
+			} else if (statement.Resource instanceof Array) {
+				mergedStatements[statement.Sid].Resource.push(...statement.Resource);
+			} else {
+				console.warn('Unknown resource type!', statement.Resource);
+			}
+		}
+	}
+
+	mergedIAM.Statement = Object.values(mergedStatements).map((statement) => {
+		statement.Resource = [...new Set(statement.Resource)];
+
+		return statement;
+	});
+
+	const output = JSON.stringify(mergedIAM, null, '\t');
+	fs.writeFileSync(fileName, output);
+	console.log(`-> Created ${fileName}`);
+}

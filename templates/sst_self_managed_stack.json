@@ -1,0 +1,184 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowCDKManageToolkitRolesWithoutDeleteAction",
+            "Effect": "Allow",
+            "Action": [
+                "iam:AttachRolePolicy",
+                "iam:CreateRole",
+                "iam:DetachRolePolicy",
+                "iam:GetRole",
+                "iam:GetRolePolicy",
+                "iam:PutRolePolicy",
+                "iam:TagRole",
+                "iam:PassRole"
+            ],
+            "Resource": [
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-cfn-exec-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-file-publishing-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-image-publishing-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-lookup-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-deploy-role-*"
+            ]
+        },
+        {
+            "Sid": "AllowCDKManageToolkitBucketWithoutDeleteAction",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetEncryptionConfiguration",
+                "s3:GetBucketLocation",
+                "s3:GetBucketPolicy",
+                "s3:PutBucketPolicy",
+                "s3:PutBucketVersioning",
+                "s3:PutEncryptionConfiguration",
+                "s3:PutLifecycleConfiguration",
+                "s3:PutBucketPublicAccessBlock"
+            ],
+            "Resource": [
+                "arn:aws:s3:::cdk-hnb659fds-assets-*"
+            ]
+        },
+        {
+            "Sid": "AllowCDKGetToolkitVersionParameter",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:GetParameters"
+            ],
+            "Resource": [
+                "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/cdk-bootstrap/hnb659fds/version"
+            ]
+        },
+        {
+            "Sid": "AllowSSTManageBootstrapStack",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:DescribeStacks",
+                "cloudformation:DescribeStackEvents"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:{{ region }}:{{ account_id }}:stack/CDKToolkit/*",
+                "arn:aws:cloudformation:{{ region }}:{{ account_id }}:stack/SSTBootstrap/*"
+            ]
+        },
+        {
+            "Sid": "AllowSSTAssumeCDKToolkitRoles",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": [
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-cfn-exec-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-file-publishing-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-image-publishing-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-lookup-role-*",
+                "arn:aws:iam::{{ account_id }}:role/cdk-hnb659fds-deploy-role-*"
+            ]
+        },
+        {
+            "Sid": "AllowSSTMonitorStackDeployment",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:DeleteStack",
+				"cloudformation:UpdateStack",
+                "cloudformation:DescribeStacks",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:GetTemplate"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:{{ region }}:{{ account_id }}:stack/{{ stage }}-{{ project }}-{{ stack_name }}/*"
+            ]
+        },
+        {
+            "Sid": "AllowSSTManageBootstrapBucket",
+            "Effect": "Allow",
+            "Action": [
+                "s3:DeleteObject",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::sstbootstrap-*/appMetadata/app.{{ project }}*",
+                "arn:aws:s3:::sstbootstrap-*/sourcemap/{{ project }}*",
+                "arn:aws:s3:::sstbootstrap-*/stackMetadata/app.{{ project }}*"
+            ]
+        },
+		{
+			"Sid": "AllowSSTManageAppS3",
+			"Effect": "Allow",
+			"Action": [
+                "s3:DeleteObject",
+				"s3:ListBucket",
+				"s3:DescribeJob",
+				"s3:GetObject",
+				"s3:PutBucketVersioning",
+				"s3:PutObject",
+				"s3:PutObjectTagging",
+				"s3:PutObjectVersionTagging"
+			],
+			"Resource": [
+				"arn:aws:s3:::{{ stage }}-{{ project }}-{{ stack_short_name }}-*"
+			]
+		},
+        {
+            "Sid": "AllowSSTCLIManageAppSecrets",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:DeleteParameter",
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "ssm:GetParametersByPath",
+                "ssm:PutParameter"
+            ],
+            "Resource": [
+                "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/sst/{{ project }}/{{ stage }}/Secret/*"
+            ]
+        },
+        {
+            "Sid": "AllowSSTCLIRestartAppFunction",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:GetFunctionConfiguration",
+                "lambda:UpdateFunctionConfiguration"
+            ],
+            "Resource": [
+                "arn:aws:lambda:{{ region }}:{{ account_id }}:function:{{ stage }}-{{ project }}*"
+            ],
+            "Condition": {
+                "Null": {
+                    "aws:ResourceTag/sst:app": "false"
+                }
+            }
+        },
+        {
+            "Sid": "AllowSSTLiveLambdaDescribeSocketEndpoint",
+            "Effect": "Allow",
+            "Action": [
+                "iot:DescribeEndpoint"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "AllowSSTConnectToEndpoint",
+            "Effect": "Allow",
+            "Action": [
+                "iot:Connect"
+            ],
+            "Resource": "arn:aws:iot:{{ region }}:{{ account_id }}:client/*"
+        },
+        {
+            "Sid": "AllowSSTLiveLambdaSocketEvents",
+            "Effect": "Allow",
+            "Action": [
+                "iot:Subscribe",
+                "iot:Publish",
+                "iot:Receive"
+            ],
+            "Resource": [
+                "arn:aws:iot:{{ region }}:{{ account_id }}:topic/sst/{{ project }}/{{ stage }}/*"
+            ]
+        }
+    ]
+}
