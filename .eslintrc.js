@@ -1,4 +1,7 @@
 module.exports = {
-  root: true,
-  extends: ["@metacraft/eslint-config"],
-}
+	root: true,
+	env: {
+		node: true,
+	},
+	extends: ['@metacraft/eslint-config'],
+};
