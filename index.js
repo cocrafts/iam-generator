@@ -48,14 +48,26 @@ if (configFile) {
 	stages = config[templateName].stages;
 	stacks = config[templateName].stacks;
 } else {
-	account_id = readlineSync.question('AWS Account ID: ');
-	region = readlineSync.question('Region: ');
-	project = readlineSync.question('Project: ');
-	const stage = readlineSync.question('Stage (comma separate): ');
+	account_id = getFlag('account-id', true);
+	if (!account_id) account_id = readlineSync.question('AWS Account ID: ');
+
+	region = getFlag('region', true);
+	if (!region) region = readlineSync.question('Region: ');
+
+	project = getFlag('project', true);
+	if (!project) project = readlineSync.question('Project: ');
+
+	let stage = getFlag('stage', true);
+	if (!stage) stage = readlineSync.question('Stage (comma separate): ');
 	stages = stage.split(',');
-	const stack = readlineSync.question('Stack (comma separate): ');
+
+	let stack = getFlag('stack', true);
+	if (!stack) stack = readlineSync.question('Stack (comma separate): ');
 	stacks = stack.split(',');
 }
+
+let merge = getFlag('merge');
+let mergedIAM;
 
 for (const stage of stages) {
 	for (const stack of stacks) {
@@ -68,8 +80,24 @@ for (const stage of stages) {
 			stack_short_name: stack.substring(0, 6),
 		});
 
-		const fileName = `./output/${templateName}_${project}_${stage}_${stack}.json`;
-		fs.writeFileSync(fileName, output);
-		console.log(`-> Created ${fileName}`);
+		if (merge) {
+			const parsedOutput = JSON.parse(output);
+			if (!mergedIAM) {
+				mergedIAM = parsedOutput;
+			} else {
+				mergedIAM.Statement.push(...parsedOutput.Statement);
+			}
+		} else {
+			const fileName = `./output/${templateName}_${project}_${stage}_${stack}.json`;
+			fs.writeFileSync(fileName, output);
+			console.log(`-> Created ${fileName}`);
+		}
 	}
+}
+
+if (merge) {
+	const fileName = `./output/${templateName}_${project}_${stages.join('-')}_${stacks.join('-')}.json`;
+	const output = JSON.stringify(mergedIAM, null, '\t');
+	fs.writeFileSync(fileName, output);
+	console.log(`-> Created ${fileName}`);
 }

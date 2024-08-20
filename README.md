@@ -8,6 +8,17 @@ To install dependencies:
 bun install
 ```
 
+Available flags
+
+```
+--template: choose which template to use
+--config: specify config file
+--merge: merge config to single output
+
+# if not specify --config, we can explicitly specify fields
+--account-id, --region, --project, --stage (comma separate), --stack (comma separate)
+```
+
 To run:
 
 ```bash
