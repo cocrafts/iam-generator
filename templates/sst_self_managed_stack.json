@@ -78,6 +78,7 @@
             "Effect": "Allow",
             "Action": [
                 "cloudformation:DeleteStack",
+				"cloudformation:UpdateStack",
                 "cloudformation:DescribeStacks",
                 "cloudformation:DescribeStackEvents",
                 "cloudformation:DescribeStackResources",
@@ -102,6 +103,23 @@
                 "arn:aws:s3:::sstbootstrap-*/stackMetadata/app.{{ project }}*"
             ]
         },
+		{
+			"Sid": "AllowSSTManageAppS3",
+			"Effect": "Allow",
+			"Action": [
+                "s3:DeleteObject",
+				"s3:ListBucket",
+				"s3:DescribeJob",
+				"s3:GetObject",
+				"s3:PutBucketVersioning",
+				"s3:PutObject",
+				"s3:PutObjectTagging",
+				"s3:PutObjectVersionTagging"
+			],
+			"Resource": [
+				"arn:aws:s3:::{{ stage }}-{{ project }}-{{ stack_short_name }}-*"
+			]
+		},
         {
             "Sid": "AllowSSTCLIManageAppSecrets",
             "Effect": "Allow",
