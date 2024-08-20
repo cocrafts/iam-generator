@@ -97,6 +97,32 @@ for (const stage of stages) {
 
 if (merge) {
 	const fileName = `./output/${templateName}_${project}_${stages.join('-')}_${stacks.join('-')}.json`;
+
+	const mergedStatements = {};
+	for (const index in mergedIAM.Statement) {
+		const statement = mergedIAM.Statement[index];
+		if (!mergedStatements[statement.Sid]) {
+			if (typeof statement.Resource === 'string') {
+				statement.Resource = [statement.Resource];
+			}
+			mergedStatements[statement.Sid] = statement;
+		} else {
+			if (typeof statement.Resource === 'string') {
+				mergedStatements[statement.Sid].Resource.push(statement.Resource);
+			} else if (statement.Resource instanceof Array) {
+				mergedStatements[statement.Sid].Resource.push(...statement.Resource);
+			} else {
+				console.warn('Unknown resource type!', statement.Resource);
+			}
+		}
+	}
+
+	mergedIAM.Statement = Object.values(mergedStatements).map((statement) => {
+		statement.Resource = [...new Set(statement.Resource)];
+
+		return statement;
+	});
+
 	const output = JSON.stringify(mergedIAM, null, '\t');
 	fs.writeFileSync(fileName, output);
 	console.log(`-> Created ${fileName}`);
