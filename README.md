@@ -21,11 +21,21 @@ Available flags
 
 To run:
 
+With flags
+
+```bash
+node index.js --template sst_self_managed_stack --account-id 123 --region ap-south-1 --project gotenks --stage tanle --stack walless,pixeverse,api,workers --merge
+```
+
+Interactive
+
 ```bash
 bun run index.js
 # or
 node index.js
 ```
+
+With template and config
 
 ```bash
 bun run index.js --template sst_update_stack --config config.json
