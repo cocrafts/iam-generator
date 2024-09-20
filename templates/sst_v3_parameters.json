@@ -1,0 +1,31 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+          "Sid": "ManageBootstrapSSMParameter",
+          "Effect": "Allow",
+          "Action": [
+              "ssm:GetParameters",
+              "ssm:PutParameter"
+          ],
+          "Resource": [
+              "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/sst/passphrase/*",
+              "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/sst/bootstrap"
+          ]
+      },
+      {
+          "Sid": "ManageSecrets",
+          "Effect": "Allow",
+          "Action": [
+              "ssm:DeleteParameter",
+              "ssm:GetParameter",
+              "ssm:GetParameters",
+              "ssm:GetParametersByPath",
+              "ssm:PutParameter"
+          ],
+          "Resource": [
+              "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/sst/*"
+          ]
+      }
+    ]
+}

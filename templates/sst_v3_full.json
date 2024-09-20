@@ -1,0 +1,100 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+          "Sid": "ManageBootstrapStateBucket",
+          "Effect": "Allow",
+          "Action": [
+              "s3:CreateBucket",
+              "s3:PutBucketVersioning",
+              "s3:PutBucketNotification",
+              "s3:PutBucketPolicy",
+              "s3:DeleteObject",
+              "s3:GetObject",
+              "s3:ListBucket",
+              "s3:PutObject"
+          ],
+          "Resource": [
+              "arn:aws:s3:::sst-state-*"
+          ]
+      },
+      {
+          "Sid": "ManageBootstrapAssetBucket",
+          "Effect": "Allow",
+          "Action": [
+              "s3:CreateBucket",
+              "s3:PutBucketVersioning",
+              "s3:PutBucketNotification",
+              "s3:PutBucketPolicy",
+              "s3:DeleteObject",
+              "s3:GetObject",
+              "s3:ListBucket",
+              "s3:PutObject"
+          ],
+          "Resource": [
+              "arn:aws:s3:::sst-asset-*"
+          ]
+      },
+      {
+          "Sid": "ManageBootstrapECRRepo",
+          "Effect": "Allow",
+          "Action": [
+              "ecr:CreateRepository",
+              "ecr:DescribeRepositories"
+          ],
+          "Resource": [
+              "arn:aws:ecr:{{ region }}:{{ account_id }}:repository/sst-asset"
+          ]
+      },
+      {
+          "Sid": "ManageBootstrapSSMParameter",
+          "Effect": "Allow",
+          "Action": [
+              "ssm:GetParameters",
+              "ssm:PutParameter"
+          ],
+          "Resource": [
+              "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/sst/passphrase/*",
+              "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/sst/bootstrap"
+          ]
+      },
+      {
+          "Sid": "Deployments",
+          "Effect": "Allow",
+          "Action": [
+              "*"
+          ],
+          "Resource": [
+              "*"
+          ]
+      },
+      {
+          "Sid": "ManageSecrets",
+          "Effect": "Allow",
+          "Action": [
+              "ssm:DeleteParameter",
+              "ssm:GetParameter",
+              "ssm:GetParameters",
+              "ssm:GetParametersByPath",
+              "ssm:PutParameter"
+          ],
+          "Resource": [
+              "arn:aws:ssm:{{ region }}:{{ account_id }}:parameter/sst/*"
+          ]
+      },
+      {
+          "Sid": "LiveLambdaSocketConnection",
+          "Effect": "Allow",
+          "Action": [
+              "iot:DescribeEndpoint",
+              "iot:Connect",
+              "iot:Subscribe",
+              "iot:Publish",
+              "iot:Receive"
+          ],
+          "Resource": [
+              "*"
+          ]
+      }
+    ]
+}
